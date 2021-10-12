@@ -51,7 +51,7 @@ declare pmenv=""
 declare pmuuid=""
 declare pmfhirurl=""
 # Initialize parameters specified from command line
-while getopts ":k:n:sp" arg; do
+while getopts ":k:n:s:p:" arg; do
 	case "${arg}" in
 		k)
 			kvname=${OPTARG}
@@ -123,7 +123,7 @@ echo "Creating Service Client Principal "$spname"..."
 		spsecret=$(echo $stepresult | jq -r '.password')
 		stepresult=$(az ad app permission add --id $spappid --api $fpclientid --api-permissions 24c50db1-1e11-4273-b6a0-b697f734bcb4=Role 2d1c681b-71e0-4f12-9040-d0f42884be86=Role)
 		stepresult=$(az ad app permission grant --id $spappid --api $fpclientid)
-		if [ -n "$storekv" ]; then
+		if [ -z "$storekv" ]; then
 			echo "Updating Keyvault with new Service Client Settings..."
 			stepresult=$(az keyvault secret set --vault-name $kvname --name "FP-SC-TENANT-NAME" --value $sptenant)
 			stepresult=$(az keyvault secret set --vault-name $kvname --name "FP-SC-CLIENT-ID" --value $spappid)
@@ -149,7 +149,7 @@ echo "Creating Service Client Principal "$spname"..."
 		echo "************************************************************************************************************"
 		echo "Created fhir proxy service principal client "$spname" on "$(date)
 		echo "This client can be used for OAuth2 client_credentials flow authentication to the FHIR Proxy"
-		if [ -n "$storekv" ]; then
+		if [ -z "$storekv" ]; then
 			echo "Your client credentials have been securely stored as secrets in keyvault "$kvname
 			echo "The secret prefix is FP-SC-"
 		else
